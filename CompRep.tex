@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}
 \usepackage{graphicx}
-\author{C.~M.~Maynard and others}
+\usepackage{cite}
+\author{S.~A.~Adams, S.~Cusworth, C.~M.~Maynard and others}
 \title{Report on LFRic computational performance 2019}
 \date{\today}
 
@@ -9,58 +10,27 @@
 \maketitle
 \medskip
 \section{Introduction\label{sec:intro}}
-{\bf THIS IS LAST YEAR's TEXT}
-The LFRic model has undergone significant development in the past
-year. Gung Ho science has also undergone development which has had a
-positive impact on performance as well as imposing requirements on the
-software infrastructure. The computational performance represents work
-by the Gung Ho Dynamics, LFRic software and PSyclone development teams.
-
-To be performant on potential, future, highly
-parallel and diverse architectures, several features, algorithmic and computational
-are required and this has led to the LFRic design and performance
-strategy. The separation of concerns of the Natural and Computational
-Science is a key design feature which allows different parallel models
-to be employed to target different architectures by automatic code generation.
-
-However, several problems with libraries used by the LFRic models and
-the compilers themselves have inhibited progress. The ESMF library has
-been used for the distributed memory structures and communications
-over MPI. The ESMF library has a 32-bit limit for integers. This
-creates a problem for LFRic as partitioning the mesh and determining
-the routing tables for remote communication requires the global mesh
-to be held in local memory whilst the initialisation is
-performed. This has limited the problem size that has been able to
-used and thus a strong scaling limit. A modification of to the
-high-order coordinate field for which routing tables are not required
-has allowed LFRic to scale to a cubed sphere C1944. Where this denotes
-$1944 \times 1944$ cells per panel of the cube. This has a global
-model resolution of 5km, with 30 levels. 
-
-The LFRic project has a mitigation strategy in place which will allow
-the routing table calculation to be performed more efficiently, both
-in execution time and memory capacity which will allow LFRic to be
-able to use a 1km global mesh. A second mitigation strategy is also in
-place to use the Library YAXT, instead of ESMF.  Whilst YAXT initially
-has similar problems to ESMF, these are much simpler to resolve as the
-YAXT is significantly smaller than ESMF and simpler for outside
-developers (such as the LFRic team) to modify. 
-
-There have been several issues with compilers. Both the Intel and PGI
-compilers have had problems compiling legal Fortran 2003 Object
-Oriented code. The Intel problems have been mitigated by work-arounds
-and even be fixed in the 2018 release of the compiler. The Cray
-compiler produces a run-time memory error from the ESMF library when
-run in parallel. It is believed (by Cray at least) that this issue is
-now fixed. The PGI compiler has problems and these are under active
-investigation with the compiler group. All these issues have consumed
-a non-trivial amount of time on behalf of the LFRic and have inhibited
-the investigation and implementation of performance.
-
-The report is divided into two sections, the solver and Scaling
-Analysis and single socket computational performance.
+The LFRic infrastructure is designed to host a dynamical core (Gung Ho)
+that is scalable to a very large degree across a distributed memory
+computer. This is typically expressed over MPI. LFRic is also designed
+to accommodate different programming models to target different
+processor architectures. Currently, OpenMP 2.0 is supported for shared
+memory parallelism on CPUs. This is being extended to support OpenACC
+to target both shared memory parallelism and Instruction Level
+Parallelism (IPL) on GPUs. Moreover, the infrastructure has been
+developed to allow the infrastructure to support import features such
+as I/O using the IO server pattern in the XIOS library. Other
+developments include the abstract solver API which allows for great
+flexibility in constructing different solvers, redundant computation
+aalgorithms into halo regions which boost the efficiency of shared
+memory and reduce the amount of communication and finally a Multigrid
+solver which will enable a large reduction in the cost of global communication.
+Much of the model infrastructure is described in~\cite{LFRic}.
 
 \include{perf_section}
+
+\bibliography{refs.bib}
+\bibliographystyle{unsrt}
 
 \end{document}
 
