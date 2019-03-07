@@ -1,7 +1,11 @@
 \section{I/O}
 The majority of the I/O infrastructure delivering diagnostic output in the form of UGRID-NetCDF via XIOS is on the LFRic trunk
 and will be used as part of the Aquaplanet runs in 2019. Therefore it is now necessary to begin regular monitoring of the impact
-of I/O on compute performance. For the 2019 report, the focus is on two main areas: strong scaling when outputting regular
+of I/O on compute performance. In 2017, following the preliminary integration of XIOS into the LFRic infrastructure, performance
+tests were done, focussing mainly on strong scaling of LFRic-XIOS for diagnostic output. The conclusion was that XIOS scaled well
+out to 384 nodes (approx. 14K cores). A description of the work plus full results can be found in \cite{Adams2018}. 
+
+For the 2019 report, the focus is on two main areas: strong scaling when outputting regular
 diagnostics and also tests of in-situ post-processing. In particular tests have been done of time-meaning and also regridding 
 from the LFRic native cubed-sphere mesh to a regular lat-lon mesh. Both of these are use cases from the upcoming Aquaplanet
 runs and also evaluation of XIOS regridding is of interest to the wider Next Generation Modelling Systems programme as it
@@ -77,7 +81,7 @@ The basic run is for 120 timesteps, with diagnostic\_frequency set to 20 timeste
 \newline
 
 \normalsize
-The results are very similar to those done in 2016/2017 (with a C288 mesh). For the 24, 54 and 96 node jobs we see
+The results are very similar to those done in the 2016/2017 tests (which were done with a C288 mesh). For the 24, 54 and 96 node jobs we see
 evidence that scaling is preserved from the decreasing run times. The Client Ratio (CR) is very close to zero in all cases, 
 showing that model client tasks are hardly waiting at all for I/O requests to be processed and that I/O is asynchronous.
 
