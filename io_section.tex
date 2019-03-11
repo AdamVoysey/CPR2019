@@ -51,11 +51,11 @@ The basic run is for 120 timesteps, with diagnostic\_frequency set to 20 timeste
      \begin{tabular}{|c|c|c|c|c|c|}
       \textbf{Nodes} & \textbf{Max CR~(\%)} & \textbf{Max Client IO~(s)} & \textbf{Runtime~(s)} & \textbf{Runtime no IO~(s)} & \textbf{\% incr IO}\\
       \hline
-      24 & 0.002 & 12.76 & 10115 & & \\
-      54 & 0.002 & 13.30 & 4950 & & \\
-      96 & 0.006 & 13.36 & 2795 & & \\
-      216 & & & & & \\
-      384 & & & & & \\
+      24 & 0.002 & 12.76 & 10115 & 9832 & +3\\
+      54 & 0.002 & 13.30 & 4950 & 4709 & +5\\
+      96 & 0.006 & 13.36 & 2795 & 2810 & -0.5\\
+      216 & - & - & - & - & - \\
+      384 & - & - & - & - & - \\
     \end{tabular}
   \end{center}
 \end{table}
@@ -65,14 +65,14 @@ The basic run is for 120 timesteps, with diagnostic\_frequency set to 20 timeste
   \begin{center}
     \caption{Strong Scaling: Memory Usage *}
     \label{tab:table2}
-     \begin{tabular}{|c|c|c|}
-      \textbf{Nodes} & \textbf{Memory Usage Gb} & \textbf{Memory Usage Gb (No IO)} \\
+     \begin{tabular}{|c|c|c|c|}
+      \textbf{Nodes} & \textbf{Memory Usage Gb} & \textbf{Memory Usage Gb (No IO)} & \textbf{\% incr IO}\\
       \hline
-      24 & 841.3 &  \\
-      54 & 1020.2  &  \\
-      96 & ? &  \\
-      216 & & \\
-      384 & & \\
+      24 & 841.3 & 764.3 & +10 \\
+      54 & 1020.2  & 936.8 & +8 \\
+      96 & ? & 1126.4 & ? \\
+      216 & - & - & -  \\
+      384 & -  & -  & -  \\
     \end{tabular}
   \end{center}
 \end{table}
@@ -84,8 +84,7 @@ The basic run is for 120 timesteps, with diagnostic\_frequency set to 20 timeste
 The results are very similar to those done in the 2016/2017 tests (which were done with a C288 mesh). For the 24, 54 and 96 node jobs we see
 evidence that scaling is preserved from the decreasing run times. The Client Ratio (CR) is very close to zero in all cases, 
 showing that model client tasks are hardly waiting at all for I/O requests to be processed and that I/O is asynchronous.
-
-\textbf{Comment on \% increase of runtime and memory usage over non I/O jobs when results are available.}
+The \% runtime penalty for I/O is low and well within the assumed machine variability. The \% memory usage penalty for I/O is approx 8-10\%. 
 
 216 and 384 node jobs crashed out within the first few timesteps with XIOS-related errors even though no I/O was
 actually happening at those timesteps. I am assuming that further tuning is needed for these higher node-count jobs.
