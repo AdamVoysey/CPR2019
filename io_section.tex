@@ -15,16 +15,19 @@ experiments described here is primarily to get an idea of computational overhead
 so there is no in depth analysis of scientific accuracy apart from verifying that the jobs have produced the right kind of output. 
 
 \subsection{Job Setup}
-All tests were performed on XCS. The executables were built using the LFRic Intel Fortran environment (17.0.0.098) 
-including the latest PSyclone 1.7.0 and XIOS at r1537 of the XIOS trunk. Build flags were the default fast-debug.
+All tests were performed on XCS. The executables were built from LFRic at r17102 using the LFRic Intel Fortran environment (17.0.0.098) 
+including the latest PSyclone 1.7.0 and XIOS at r1537 of the XIOS trunk. Build flags were the default fast-debug which equates to:
+-g -traceback -warn all -warn errors -ftrapuv -check all -fpe0 -O0 -stand f08
 
 The science configuration was the standard baroclinic wave test with timestep length dependent on mesh resolution. 
 For the purposes of the tests here: 900s for a C96 mesh and 180s for a C576 mesh.
-10 fields are currently output as diagnostics in this configuration which results in approximately 5 Gb data per
-output
+10 fields are currently output as diagnostics in this configuration (air\_density (rho), three components of vorticity (xi1, xi2, xi3), eastward\_wind (u1), 
+northward\_wind (u2), exner pressure (exner), divergence
+of wind (divergence) on 30 half levels; air\_potential\_temperature (theta), upward\_air\_velocity (u3) on 31 full levels
+which results in approximately 5 Gb data per output
 
-To keep within queue time limit the basic run is for 120 timesteps, with diagnostic frequency set to 20 timesteps.
-This makes for 6 writes over the course of the run.
+To keep within the PBS queue time limit the basic run is for 120 timesteps, with diagnostic\_frequency set to 20 timesteps.
+This makes for 6 writes to a single UGRID-NetCDF file over the course of the run.
 
 \subsection{Glossary of terms}
 
@@ -41,7 +44,6 @@ This makes for 6 writes over the course of the run.
 This set of tests used a C576 mesh (approx 17Km horizontal resolution). Pure MPI only (\$OMP\_NUM\_THREADS=1). 
 I/O setup used 12 XIOS servers with lustre stripe set count to be the same. This was the best performing setup from
 the last set of I/O performance tests, so the assumption is that it is a good starting point.
-The basic run is for 120 timesteps, with diagnostic\_frequency set to 20 timesteps. This makes for 6 writes over the course of the run.
 
 \begin{table}[ht!]
 \scriptsize
@@ -49,11 +51,11 @@ The basic run is for 120 timesteps, with diagnostic\_frequency set to 20 timeste
     \caption{Strong Scaling: Runtime}
     \label{tab:table1}
      \begin{tabular}{|c|c|c|c|c|c|}
-      \textbf{Nodes} & \textbf{Max CR~(\%)} & \textbf{Max Client IO~(s)} & \textbf{Runtime~(s)} & \textbf{Runtime no IO~(s)} & \textbf{\% incr IO}\\
+      \textbf{Nodes} & \textbf{Max CR~(\%)} & \textbf{Max Client IO~(s)} & \textbf{Runtime no IO~(s)} & \textbf{Runtime~(s)} & \textbf{\% incr IO}\\
       \hline
-      24 & 0.002 & 12.76 & 10115 & 9832 & +3\\
-      54 & 0.002 & 13.30 & 4950 & 4709 & +5\\
-      96 & 0.006 & 13.36 & 2795 & 2810 & -0.5\\
+      24 & 0.002 & 12.76 & 9832 & 10115 & +3\\
+      54 & 0.002 & 13.30 & 4709 & 4950 & +5\\
+      96 & 0.006 & 13.36 & 2810 & 2795 & -0.5\\
       216 & - & - & - & - & - \\
       384 & - & - & - & - & - \\
     \end{tabular}
@@ -66,11 +68,11 @@ The basic run is for 120 timesteps, with diagnostic\_frequency set to 20 timeste
     \caption{Strong Scaling: Memory Usage *}
     \label{tab:table2}
      \begin{tabular}{|c|c|c|c|}
-      \textbf{Nodes} & \textbf{Memory Usage Gb} & \textbf{Memory Usage Gb (No IO)} & \textbf{\% incr IO}\\
+      \textbf{Nodes} & \textbf{Memory Usage Gb (No IO)} & \textbf{Memory Usage Gb} & \textbf{\% incr IO} \\
       \hline
-      24 & 841.3 & 764.3 & +10 \\
-      54 & 1020.2  & 936.8 & +8 \\
-      96 & ? & 1126.4 & ? \\
+      24 & 764.3 & 841.3 & +10 \\
+      54 & 936.8 & 1020.2 & +8 \\
+      96 & 1126.4 & ? & ? \\
       216 & - & - & -  \\
       384 & -  & -  & -  \\
     \end{tabular}
@@ -87,12 +89,12 @@ showing that model client tasks are hardly waiting at all for I/O requests to be
 The \% runtime penalty for I/O is low and well within the assumed machine variability. The \% memory usage penalty for I/O is approx 8-10\%. 
 
 216 and 384 node jobs crashed out within the first few timesteps with XIOS-related errors even though no I/O was
-actually happening at those timesteps. I am assuming that further tuning is needed for these higher node-count jobs.
+actually happening at those timesteps. We assume that further tuning is needed for these higher node-count jobs.
 See the Conclusions section for suggested avenues to explore.
 
 \subsection{Set 2: In-situ Post-processing}
 
-In this set the focus is on regridding and simple time-meaning, with usage examples taken from latest Aquaplanet branch.
+In this set of tests the focus is on regridding and simple time-meaning, with usage examples taken from latest Aquaplanet branch.
 The aim here is to get an idea of computational overhead in terms of runtime and memory, and general correctness rather than scaling.
 Therefore, these tests were done with a lower-resolution C96 mesh and only out to 96 nodes.
 Runs have also been done to compare run time and memory usage to the same job configuration with only regular diagnostic output and also 
@@ -154,7 +156,7 @@ About +6-7\% for diagnostic I/O over runs with no I/O and a further +1\% for add
 \subsubsection{Regridding}
 
 As Set 1, with the following changes: C96 mesh, 900s timestep.
-In addition to regular diagnostics, the rho, exner and divergence fields are regridded (to N96 equivalent) and output every 20ts, giving 6 writes to an additional file. Two sets of runs were done: computing weights on-the-fly each time and also using precomputed weights.
+In addition to regular diagnostics, the rho, exner and divergence fields are regridded (to N96 equivalent) and output every 20 time steps, giving 6 writes to an additional file. Two sets of runs were done: computing weights on-the-fly each time and also using precomputed weights.
 
 \normalsize
 \begin{figure}[ht!]
@@ -241,8 +243,8 @@ Interestingly, memory usage increases slightly. Presumably there is a trade-off 
 
 \subsection{Conclusions}
 
-Compared to the previous I/O performance assessment, in this year's tests the mesh resolution has been doubled and many more fields are output (although fewer timesteps are being run). A first assessment of the cost of in-situ post-processing has been made and is generally encouraging in that it seems to work correctly and there is no severe overhead of adding post-processing on top of regular diagnostic output. However, to get a really clear picture a thorough analysis of runtime variability for all non-I/O, diagnostic and post-processing scenarios is necessary. The post-processing tests need to be repeated with a higher resolution mesh as it may make any penalty more obvious (e.g. when computing regridding weights on the fly vs using precomputed weights). The issues seen with higher node count jobs need addressing to find out the cause. In the last I/O performance assessment no problem was seen with 216 and 384 node jobs but many things have changed since then: the mesh is higher resolution and the gungho science has changed considerably. 
-I suggest several avenues of investigation:
+Compared to the previous I/O performance assessment, in this year's tests the mesh resolution has been doubled and many more fields are output (although fewer timesteps are being run). A first assessment of the cost of in-situ post-processing has been made and is generally encouraging in that it seems to work correctly and there is no severe overhead of adding post-processing on top of regular diagnostic output. However, to get a really clear picture a thorough analysis of runtime variability for all non-I/O, diagnostic and post-processing scenarios is necessary. The post-processing tests need to be repeated with a higher resolution mesh as it may make any penalty more obvious (e.g. when computing regridding weights on the fly vs using precomputed weights). The issues seen with higher node count jobs need addressing to find out the cause. In the last I/O performance assessment no such problems were seen with 216 and 384 node jobs but many things have changed since then: the mesh is higher resolution and the LFRic dynamics and physics science schemes have changed considerably. 
+We suggest several avenues of investigation:
 
 \begin{itemize}
   \item XIOS buffer size. Normally not recommended to change this, but worth looking at as the error messages were to do with buffering and message passing
@@ -252,6 +254,6 @@ I suggest several avenues of investigation:
 \end{itemize}
 
 
-I suspect the issues are to do with memory usage and to fully investigate this LFRic needs a way of regularly monitoring per-timestep memory usage as a matter of urgency.
+We suspect the issues are to do with memory usage and to fully investigate this LFRic needs a way of regularly monitoring per-timestep memory usage as a matter of urgency.
  
 
