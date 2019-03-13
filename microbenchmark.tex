@@ -1,8 +1,8 @@
-\section{CMA microbenchmark on Broadwell and TX2}
-In this section we will introduce the CMA\_appinv microbenchmark and present performance results from tests on the Intel Broadwell and Cavium ARM-based ThunderX2 architechures.
-In addition we compare performance of the microbenchmark when built with different compilers and runtime libraries.
+\section{CMA micro-benchmark on Broadwell and TX2}
+In this section we will introduce the CMA\_appinv micro-benchmark and present performance results from tests on the Intel Broadwell and Cavium ARM-based ThunderX2 architectures.
+In addition we compare performance of the micro-benchmark when built with different compilers and runtime libraries.
 
-\subsection{CMA microbenchmark}
+\subsection{CMA micro-benchmark}
 
 The LFRic dynamical model performs operations to solve
 \begin{equation} \label{eq:matvec}
@@ -10,83 +10,87 @@ A \cdot \mathbf{x} = \mathbf{b}
 \end{equation}
 in various guises and contexts where $A$ is a matrix representing a partial differential equation, $\mathbf{b}$ is a vector containing information describing boundary conditions and $\mathbf{x}$ is a state vector.
 The finite element methods that the GungHo application uses are written to perform operations on a cell-by-cell basis in what is termed Local Matrix Assembly (LMA).
-The LMA microbenchmark discussed in the previous report is a characteristic example of such methods.
+The LMA micro-benchmark discussed in the previous report is a characteristic example of such methods.
 The LFRic infrastructure also contains methods for solving equation \ref{eq:matvec} on a column-by-column basis.
-Although these Column Matrix Assumbly (CMA) methods have yet to be utilised by the full GungHo application they are deployed in the gravity\_wave miniapp.
+Although these Column Matrix Assembly (CMA) methods have yet to be utilised by the full GungHo application they are deployed in the gravity\_wave mini-app.
 
-For this report we generated a new CMA microbenchmark using LFRic revision 15378 focused on the columnwise\_op\_appinv\_kernel\_code() routine in the gravity\_wave miniapp.
+For this report we generated a new CMA micro-benchmark using LFRic revision 15378 focused on the columnwise\_op\_appinv\_kernel\_code() routine in the gravity\_wave mini-app.
 This kernel is used in the pre-conditioner for the Helmholtz solver.
-As per the LMA microbenchmark described in the previous report, the driver code was extracted from the Psyclone-generated Psy-layer and the kernel was taken directly from the LFRic source code.
+As per the LMA micro-benchmark described in the previous report, the driver code was extracted from the Psyclone-generated Psy-layer and the kernel was taken directly from the LFRic source code.
 By design, the driver routine contains the so called global optimisations, namely OpenMP worksharing and colouring (to prevent race conditions) over columns on the sphere.
 
-The dinodump capability from PYSKE was used to generate Known Good Output (KGO) which we use to verify the microbenchmark behaved as expected in later tests.
-This involved adding additional PSYKE subroutine calls to the Psy-layer code in the gravity\_wave miniapp in order to capture the input scalars and arrays for the kernel.
-The microbenchmark driver code was also trivally modified to read in the produced dinodump before calling the kernel and compare the result of the kernel against the KGO.
-Before running the miniapp to generate the dinodumo the number of vertical layers in the configuration was modified from the default (10) to 256.
+The dinodump capability from PYSKE was used to generate Known Good Output (KGO) which we use to verify the micro-benchmark behaved as expected in later tests.
+This involved adding additional PSYKE subroutine calls to the Psy-layer code in the gravity\_wave mini-app in order to capture the input scalars and arrays for the kernel.
+The micro-benchmark driver code was also trivially modified to read in the produced dinodump before calling the kernel and compare the result of the kernel against the KGO.
+Before running the mini-app to generate the dinodumo the number of vertical layers in the configuration was modified from the default (10) to 256.
 While current NWP and climate GA and RA production configurations use between 70 and 90 vertical (UM) levels we took 256 layers in order to increase the throughput of the benchmark and also in expectation that future configurations will run with increased vertical resolution.
 
 
-While generating the new microbenchmark a minor bug in kernel was discovered.
-Specifically, the manner in which the kernel is called in gravity\_wave miniapp (and the supporting code comments) indicate that the kernel is called to update the target array but instead the kernel actually populates the array while overriding the initial contents.
+While generating the new micro-benchmark a minor bug in kernel was discovered.
+Specifically, the manner in which the kernel is called in gravity\_wave mini-app (and the supporting code comments) indicate that the kernel is called to update the target array but instead the kernel actually populates the array while overriding the initial contents.
 It was confirmed by the original author of the code that the functionality of the kernel was correct and the comments are in error.
 The bug has minimal performance impact on CPU architectures- an intent(inout) array should be intent(out)- but may have a larger impact on GPU architectures where the array would be being offloaded unnecessarily. 
 
-The resultant microbenchmark can be found in the micro-benchmark ~\cite{lfric-microbenchmarks} suite on github.
-We note at this point when making comparisons between the LMA and CMA\_appinv microbenchmarks we should be mindful that they serve different purposes in the solver code.
-Specifically, the LMA microbenchmark applies the matrix $A$ to a vector $\mathbf{x}$ whereas the CMA\_inv microbenchmark applies the inverse matrix $A^{-1}$ to $\mathbf{b}$, in other words it solves equation \ref{eq:matvec} for $\mathbf{x}$.
+The resultant micro-benchmark can be found in the micro-benchmark ~\cite{lfric-microbenchmarks} suite on github.
+We note at this point when making comparisons between the LMA and CMA\_appinv micro-benchmarks we should be mindful that they serve different purposes in the solver code.
+Specifically, the LMA micro-benchmark applies the matrix $A$ to a vector $\mathbf{x}$ whereas the CMA\_inv micro-benchmark applies the inverse matrix $A^{-1}$ to $\mathbf{b}$, in other words it solves equation \ref{eq:matvec} for $\mathbf{x}$.
 
-\subsection{Thread scaling}
-We present timings measured using omp\_get\_wtime().
-We use the latest stable compiler versions available on each platform at the time of writing.
-The number of iterations in the vertical has been increased from 1 to 1000.
-Run with -O3. Other compiler flags are available.
-\subsubsection{Broadwell}
-Compilers used
+\subsection{CMA\_appinv performance}
 
+We present timings for the kernel on Intel Broadwell and Cavium ThunderX2 as measured using omp\_get\_wtime().
+In each case the kernel was run for 1000 iterations in order to obtain a smooth out runtime variability.
+% Timing the routine in this way may however slightly exaggerate the time spend performing thread synchronisation, a cost we estimate to be within the noise of the system.
+We use the latest stable version of each compiler available on the two platforms at the time of writing.
+Each executable was built with the -O3 optimisation flag.
+
+\subsubsection{Intel Broadwell}
+On the Broadwell platform used (XCS) the compilers used were
 \begin{itemize}
 \item CCE 8.7.7
 \item Intel 17.0.0.098
-\item gnu 7.3.0
+\item GNU 7.3.0
 \end{itemize}
 
-On the Broadwell system used (XCS) there is a selection of compiler versions available.
+
+
 During the development of this work we encountered notable differences in performance between compiler versions.
 For example, a measurable performance degradation between cce 8.7.2 and cce 8.7.7.
-The runtime on one OMP thread increased from 8.3s to 10.5s when changing between the two versions.
-In other words cce 8.7.2 produces a faster execuatable than ifort but the 8.7.7 executable is slower than ifort.
+The single threaded (OMP\_NUM\_THREADS=1) runtime increased from 8.3s to 10.5s when changing between the two versions.
+In other words cce 8.7.2 produces a faster executable than the Intel compiler but the 8.7.7 executable is slower than the Intel generated version.
 This discrepancy is outwith the observed run-to-run variability on the system and is unexplained at present.
 We use the more recent (but slightly less performant) 8.7.7 in order to allow a one-to-one comparison with the Isambard system which at the time of writing only has version 8.7.7 of CCE.
 
 \subsubsection{TX2}
-What is an Isambard?
+Isambard is a XC50 system hosted by the Met Office and funded by the GW4 alliance and EPSRC.
+The heterogeneous system contains chips of various architectures including 164 Cavium ThunderX2 nodes.
+At the time of writing the supported compilers on the ARM-based nodes are
 \begin{itemize}
 \item CCE 8.7.7
 \item GNU 8.2.0
-\item Allinea 19.0.0
+\item Alliance 19.0.0
 \end{itemize}
 
-\subsection{CMA using drop-in library call}
+
+
+
+\subsection{CMA\_appinv performance using drop-in library call}
 Here we investigate whether the implementation of the Thomas algorithm as written in the kernel can be replaced with a call to a standard library- in this case LAPACK.
 The potential benefits of this include a potential improvement to runtimes of current architectures.
 But, more importantly calling a standard API allows us to tap into routines that have been optimised specifically for the architecture being used.
 This could provide performance portability while reducing porting and maintenance costs when moving between future compute platforms.
-A potential problem with this design is that the memory layout used in columnwise operator type (check name of obj) objects differs from that expected by the LAPACK API.
+A potential problem with this plan is that the memory layout used in the columnwise operator type objects differs from that expected by the LAPACK API.
 
-The version of the microbenchmark used can be found in a branch of the github repo.
+The version of the micro-benchmark used can be found in a branch of the github repo.
 
 Thread scaling
 Thread-scales OK but runtime is poor.
 Is it memory copies? No, we tried taking these out but couldn't match ``vanilla'' performance.
 
-\subsection{Varying the number of levels}
-Taking the Cray compiler and changing the number of levels.
-WORK NEEDED to find crossover point
-
 \subsection{Discussion}
 
 It is worth noting that there are few opportunities for vectorisation in the current implementation.
 
-In avoiding building the LFRic infractruture we also avoid compiler support problems.
+In avoiding building the LFRic infrastructure we also avoid compiler support problems.
 TX2 vs Broadwell
 Single thread performance on Broadwell is comfortably better than TX2. However, when multithreading is considered then the machines are node-for-node comparable.
 Use of drop-in lib
