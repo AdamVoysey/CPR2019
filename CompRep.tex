@@ -1,6 +1,19 @@
 \documentclass[11pt]{article}
 \usepackage{graphicx}
 \usepackage{cite}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\def\UrlBreaks{\do\/\do-}
+\lstset{language=[08]Fortran, 
+  basicstyle=\small\ttfamily, 
+  %identifierstyle=\color{green}, 
+  commentstyle=\color{red}, 
+  keywordstyle=\color{blue}, 
+  showstringspaces=false 
+}
+
+
 \author{S.~V.~Adams, S.~Cusworth, C.~M.~Maynard and others}
 \title{Report on LFRic computational performance 2019}
 \date{\today}
@@ -86,7 +99,7 @@ architecture specific optimisations.
 
 \include{io_section}
 
-\include{pa}
+\include{PA}
 
 \bibliography{refs.bib}
 \bibliographystyle{unsrt}
