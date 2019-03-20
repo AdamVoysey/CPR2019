@@ -54,22 +54,22 @@ On the Broadwell platform used (XCS) the compilers used were
 
 
 During the development of this work we encountered notable differences in performance between compiler versions.
-For example, a measurable performance degradation between cce 8.7.2 and cce 8.7.7.
-The single threaded (OMP\_NUM\_THREADS=1) runtime increased from 8.3s to 10.5s when changing between the two versions.
-In other words cce 8.7.2 produces a faster executable than the Intel compiler but the 8.7.7 executable is slower than the Intel generated version.
+For example, a measurable performance degradation between cce 8.6.0 and the cce 8.7.x series.
+The single threaded (OMP\_NUM\_THREADS=1) runtime increased from 7.4s to 10.5s when changing between the two versions.
+In other words cce 8.6.0 produces a faster executable than the Intel compiler but the 8.7.7 executable is slower than the Intel generated version.
 This discrepancy is outwith the observed run-to-run variability on the system and is unexplained at present.
-We use the more recent (but slightly less performant) 8.7.7 in order to allow a one-to-one comparison with the Isambard system which at the time of writing only has version 8.7.7 of CCE.
+We use the more recent (but slightly less performant) cce 8.7.7.
 
 \subsubsection{TX2}
 Isambard is a XC50 system hosted by the Met Office and funded by the GW4 alliance and EPSRC.
 The heterogeneous system contains chips of various architectures including 164 Cavium ThunderX2 nodes.
-At the time of writing the supported compilers on the ARM-based nodes are
+At the time of writing (after the March 2019 upgrade to CLE7.0) the supported compilers on the ARM-based nodes are
 \begin{itemize}
-\item CCE 8.7.7
+\item CCE 8.7.9
 \item GNU 8.2.0
-\item Alliance 19.0.0
+\item Allinea 19.0.1
 \end{itemize}
-
+where the Allinea compiler is built on top of LLVM and Flang.
 
 
 
