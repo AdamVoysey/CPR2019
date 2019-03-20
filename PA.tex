@@ -5,19 +5,19 @@
 The LFRic-microbenchmark suite~\cite{lfric-microbenchmarks} allows
 optimisations for individual kernels to be explored without having to
 compile and run the whole code. This is particularly useful when
-targeting a programming model such as OpenACC for GPU architecture
+targeting a programming model such as OpenACC for GPU architectures
 where the Portland group compiler cannot compile the Fortran 2003 used 
 in the main code.
 
 The local matrix assembly (LMA) matrix-vector kernel had been
-previously ported to run on GPUs by inserting Open ACC directives in
+previously ported to run on GPUs by inserting OpenACC directives in
 the PSy layer code to control the data transfer from host memory to
 device memory and to offload the kernel call to the GPU device. This
-Open ACC version was the starting point for Alan Gray from NVIDIA to
+OpenACC version was the starting point for Alan Gray from NVIDIA to
 to look at optimisations. Moreover, after discussions regarding 
-the PSyKAl API and the LFRic plans for how Open ACC will be
+the PSyKAl API and the LFRic plans for how OpenACC will be
 implemented for a GPU version, NVIDIA believe that the plan and
-implementation will enable a succesful GPU implementation.
+implementation will enable a successful GPU implementation.
 This is a summary of potential optimisations from NVIDIA.
 
 \begin{lstlisting}[language=Fortran,caption={Code fragment of original 
@@ -38,26 +38,25 @@ This is a summary of potential optimisations from NVIDIA.
       lhs(map1(df)+k) = lhs(map1(df)+k) + lhs_e(df,k)
     end do
 
-  end do 
-  !$
+  end do  
 \end{lstlisting}
 
 Shown in listing~\ref{lst:LMA-orig} is a code fragment of the LMA
-kernel. It has an Open ACC directive \verb+!$acc loop vector+ before the
-outmost $k$ loop, so that each thread in a thread block will do different loop
+kernel. It has an OpenACC directive \verb+!$acc loop vector+ before the
+outermost $k$ loop, so that each thread in a thread block will do different loop
 iterations. This code runs on a GPU, but not very efficiently. 
 
 The first optimisation was to fuse the two loops over \verb+ndf1+
 (lines 6-11 and 13-15) and replace the array \verb+lhs_e+ with a
 scalar. The scalar can stay resident in a register for each thread and
-avoids unnecessary memory accesses. This optimisation is call loop
+avoids unnecessary memory accesses. This optimisation is called loop
 fuse. 
 
 The second optimisation was to exploit more parallelism on the GPU.
-This performed with the Open ACC loop clause {\em collapse} to combine
+This performed with the OpenACC loop clause {\em collapse} to combine
 the two outermost loops. This has the added benefit of aiding {\em
   memory coalescence}, {\em i.e.} neighbouring parallel threads
-accessing neighbouring memory locations. However, an Open ACC {\em
+accessing neighbouring memory locations. However, an OpenACC {\em
   atomic update} directive is required as the loop over {\em ndf1} is
 now also parallel. This optimisation is called Loop collapse. The new
 kernel code is shown in listing~\ref{lst:LMA-opt}. 
@@ -152,7 +151,7 @@ reasonable size for a single core of a CPU, a similar size is too
 small to fully exploit the parallelism of GPU. In particular, to
 effectively exploit the SIMT parallelism with the vertical degrees of
 freedom, the vector size should be $128$ or more. $40$ levels is
-clearly to few. Worse, in this particular case the colouring data here
+clearly too few. Worse, in this particular case the colouring data here
 had the non-optimal $6$ colours, whereas $4$ is sufficient. As seen in
 the previous year's performance report the GPU should handle much more
 work for a disproportional decrease in cost. This is especially true
@@ -160,7 +159,7 @@ for the number of levels.
 
 These optimisations show that the code can run with some degree of
 efficiency on a GPU. PSyclone is being developed so that is can
-produce the necessary Open ACC directives in the PSy layer. Moreover,
+produce the necessary OpenACC directives in the PSy layer. Moreover,
 its is being developed so that it can parse individual statements in
 the kernel. This is necessary so that the kernel source can be
 annotated with directives. Then the whole code can have a GPU
