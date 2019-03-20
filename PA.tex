@@ -6,8 +6,8 @@ The LFRic-microbenchmark suite~\cite{lfric-microbenchmarks} allows
 optimisations for individual kernels to be explored without having to
 compile and run the whole code. This is particularly useful when
 targeting a programming model such as OpenACC for GPU architecture
-where the Portland group compiler cannot compile the Fortran 2003 of
-the whole code.
+where the Portland group compiler cannot compile the Fortran 2003 used 
+in the main code.
 
 The local matrix assembly (LMA) matrix-vector kernel had been
 previously ported to run on GPUs by inserting Open ACC directives in
@@ -44,19 +44,19 @@ This is a summary of potential optimisations from NVIDIA.
 
 Shown in listing~\ref{lst:LMA-orig} is a code fragment of the LMA
 kernel. It has an Open ACC directive \verb+!$acc loop vector+ before the
-outmost $k$ loop, so that each thread in a warp will do different loop
+outmost $k$ loop, so that each thread in a thread block will do different loop
 iterations. This code runs on a GPU, but not very efficiently. 
 
-The first optimisation is to fuse the two loops over \verb+ndf1+
+The first optimisation was to fuse the two loops over \verb+ndf1+
 (lines 6-11 and 13-15) and replace the array \verb+lhs_e+ with a
 scalar. The scalar can stay resident in a register for each thread and
-avoids uncessary memory accesses. This optimisation is call loop
+avoids unnecessary memory accesses. This optimisation is call loop
 fuse. 
 
 The second optimisation was to exploit more parallelism on the GPU.
 This performed with the Open ACC loop clause {\em collapse} to combine
 the two outermost loops. This has the added benefit of aiding {\em
-  memory coalensce}, {\em i.e.} neighbouring parallel threads
+  memory coalescence}, {\em i.e.} neighbouring parallel threads
 accessing neighbouring memory locations. However, an Open ACC {\em
   atomic update} directive is required as the loop over {\em ndf1} is
 now also parallel. This optimisation is called Loop collapse. The new
@@ -87,7 +87,7 @@ These first two optimisations increase the speed of execution but the
 code still has a large register usage which results in low occupancy
 of the GPU parallel units. This can be reduced by inlining the kernel
 subroutine into the PSy layer. This can be done by the PGI compiler,
-using Interprocedural Analyis (IPA). This triggered by the following
+using Inter-procedural Analysis (IPA). This triggered by the following
 compiler flag \verb+-Mipa=inline:reshape -Minfo flags+. The info flag
 is for reporting purposes. This optimisation is called Inlining. 
 
@@ -100,7 +100,7 @@ simply done by not colouring at all. This optimisation is called
 Single Kernel.
 
 The colouring serialisation loop order is done for correctness,
-however, the precence of the atomic update in the kernel prevents the
+however, the presence of the atomic update in the kernel prevents the
 data race that colouring is designed to prevent, so the code is thread
 safe. However, the atomic update doesn't guarantee the order of
 execution, whereas colouring does. This means that whilst the data
@@ -136,14 +136,38 @@ Single Kernel & $0.32$ \\\hline
 
 The speed up times are impressive, but a further analysis of the
 absolute performance is useful. The NVIDIA profiler was
-used to measure some metrics and compare to a simple ``roofline''
-analyis~\cite{roofline} of the code on Volta suggests that as the arithmetic
+used to measure some performance metrics. This was compared to a simple ``roofline''
+analysis~\cite{roofline} of the code on Volta. This suggests that as the arithmetic
 intensity (flops per byte) of $0.3$ flops/byte of the kernel is low
-compared to the ridgeline of the hardware, $9.09$ flops/byte then the
+compared to the ridge-line of the hardware, $9.9$ flops/byte, then the
 code is memory bound. Comparing the memory bandwidth achieved of 549
 GB/s to the Stream benchmark for the hardware suggests the code is
 achieved around $70\%$ of the available bandwidth. This suggest the
 code is fairly well optimised.
 
-It should be noted that the problem size is too small. 
+It should be noted that the problem size is too small, the data file
+supplied to NVIDIA had $864$ cells with $40$ layers. Whilst, a target
+local volume size of $12\times 12=144$ or $24\times 24=576$ is a
+reasonable size for a single core of a CPU, a similar size is too
+small to fully exploit the parallelism of GPU. In particular, to
+effectively exploit the SIMT parallelism with the vertical degrees of
+freedom, the vector size should be $128$ or more. $40$ levels is
+clearly to few. Worse, in this particular case the colouring data here
+had the non-optimal $6$ colours, whereas $4$ is sufficient. As seen in
+the previous year's performance report the GPU should handle much more
+work for a disproportional decrease in cost. This is especially true
+for the number of levels.
+
+These optimisations show that the code can run with some degree of
+efficiency on a GPU. PSyclone is being developed so that is can
+produce the necessary Open ACC directives in the PSy layer. Moreover,
+its is being developed so that it can parse individual statements in
+the kernel. This is necessary so that the kernel source can be
+annotated with directives. Then the whole code can have a GPU
+implementation generated automatically. To modify the actual source
+code takes this a step further. However, it would in principle be
+possible and moreover, this is similar to some of the ideas in CLAW~\cite{claw}.
+CLAW is being considered for the parallelisation of the physical
+parameterisations and some of the ideas would then be re-implemented in
+PSyclone. Generating optimised code for GPUs is then possible.
 
