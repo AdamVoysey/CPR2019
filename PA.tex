@@ -26,9 +26,10 @@ from NVIDIA.
 
     do df = 1, ndf1
       do df2 = 1, ndf2
-        lhs_e(df,k) = lhs_e(df,k) + matrix(df,df2,ik)*x(map2(df2)+k)
+        lhs_e(df,k) = lhs_e(df,k) + & 
+          matrix(df,df2,ik)*x(map2(df2)+k)
       end do
-   end do
+    end do
 
     do df = 1, ndf1
       lhs(map1(df)+k) = lhs(map1(df)+k) + lhs_e(df,k)
@@ -37,6 +38,17 @@ from NVIDIA.
   end do 
   !$
 \end{lstlisting}
+
+Shown in listing~\ref{lst:LMA-orig} is a code fragment of the LMA
+kernel. It has an Open ACC directive \verb+!$acc loop vector+ before the
+outmost $k$ loop, so that each thread in a warp will do different loop
+iterations. This code runs on a GPU, but not very efficiently. 
+
+The first optimisation is to fuse the two loops over \verb+ndf1+
+(lines 6-11 and 13-15) and replace the array \verb+lhs_e+ with a
+scalar. The scalar can stay resident in a register for each thread and
+avoids uncessary memory accesses. This optimisation is call loop
+fuse. 
 
 \begin{lstlisting}[language=Fortran,caption={Optimised
     kernel},label={lst:LMA-opt}]
