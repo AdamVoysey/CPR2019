@@ -6,21 +6,18 @@ import matplotlib.ticker as ticker
 
 import sys
 
-def plot6Data(x, y1, y2, z1, z2, v1, v2):
+def plot4Data(x, y1, y2, z1, z2):
 
     fig, ax = plt.subplots()
     xlim=[15,500]
     ax.set_xlim(xlim[0],xlim[1])
-    width1=0.05*x
+    width1=0.1*x
 
-    rects1 = ax.bar(0.85*x, y1, width1, color='b',label="HET1",edgecolor='black')
-    rects2 = ax.bar(0.9*x, y2, width1, color='r',label="HET6",edgecolor='black')
+    rects1 = ax.bar(0.8*x, y1, width1, color='teal',label="HET1",edgecolor='black')
+    rects2 = ax.bar(0.9*x, y2, width1, color='navy',label="HET6",edgecolor='black')
     
-    rects3 = ax.bar(0.95*x, z1, width1, color='darkgreen',label="GST1",edgecolor='black')
-    rects4 = ax.bar(x, z2, width1, color='teal',label="GST6",edgecolor='black')
-
-    rects5 = ax.bar(1.05*x, v1, width1, color='purple',label="UT1",edgecolor='black')
-    rects6 = ax.bar(1.1*x, v2, width1, color='pink',label="UT6",edgecolor='black')
+    rects3 = ax.bar(x, z1, width1, color='pink',label="GST1",edgecolor='black')
+    rects4 = ax.bar(1.1*x, z2, width1, color='purple',label="GST6",edgecolor='black')
 
     ax.set_xscale('log')
     ax.minorticks_on()
@@ -28,6 +25,7 @@ def plot6Data(x, y1, y2, z1, z2, v1, v2):
     ax.get_xaxis().set_major_formatter(ticker.ScalarFormatter())
     ax.get_xaxis().set_minor_locator(ticker.NullLocator())
 
+    ax.legend(loc='upper right')    
     ax.set_xlabel("# nodes")
     ax.set_ylabel("time (s)")
     plt.show()
@@ -63,9 +61,9 @@ def plot2Data(x, y1, y2):
 #    fstem="strong-scale"
     fstem="wc-scale"
     fname=fstem+".png"
-    plt.savefig(fname,format="png")
+#    plt.savefig(fname,format="png")
     fname=fstem+".eps"
-    plt.savefig(fname,format="eps")    
+#    plt.savefig(fname,format="eps")    
     plt.show()
 
 
@@ -100,5 +98,5 @@ T1U=T1W*P1U
 #ompdat=np.array(sdata[:,2])
 
 #plot2Data(nodes, T1W, T6W)
-
-plot6Data(nodes, T1HE, T6HE, T1GS, T6GS, T1U, T6U)
+plot2Data(nodes, T1U, T6U)
+plot4Data(nodes, T1HE, T6HE, T1GS, T6GS)
