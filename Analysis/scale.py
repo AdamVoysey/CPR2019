@@ -3,21 +3,53 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from mpl_toolkits.mplot3d import Axes3D
+import math
 
 import sys
 
-def plot4Data(x, y1, y2, z1, z2):
+def plot4Data3d(x, y1, y2, y3, y4,fstem):
 
-    fig, ax = plt.subplots()
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    xlim=[4,9]
+    ax.set_xlim(xlim[0],xlim[1])
+    width1=0.25 
+    yticks=[1,2,3,4]
+
+    rects1 = ax.bar(x, y1, zs=1, width=width1, zdir='y',color='hotpink',alpha=0.8,edgecolor='black')
+    rects2 = ax.bar(x, y2, zs=2, width=width1, zdir='y', color='purple',alpha=0.8,edgecolor='black')
+    rects3 = ax.bar(x, y3, zs=3, width=width1, zdir='y', color='teal',alpha=0.8,edgecolor='black')
+    rects4 = ax.bar(x, y4, zs=4, width=width1, zdir='y', color='navy',alpha=0.8,edgecolor='black')
+
+    ax.minorticks_on()
+    ax.set_xticks(x)
+
+    ax.legend(loc='upper right')    
+    ax.set_xlabel("# nodes")
+    ax.set_zlabel("time (s)")
+    ax.set_yticks(yticks)
+    plt.xticks([4.58496250072,5.75488750216,6.58496250072,7.75488750216,8.58496250072],["24","54","96","216","384"])
+    plt.yticks([1,2,3,4],["HET1", "HET6","GST1", "GST6"])
+
+    fname=fstem+".png"
+    plt.savefig(fname,format="png")
+    fname=fstem+".eps"
+    plt.savefig(fname,format="eps")      
+    plt.show()
+###########################################    
+
+def plot4Data(x, y1, y2, y3, y4,fstem):
+
+    fig, ax = plt.subplots()    
     xlim=[15,500]
     ax.set_xlim(xlim[0],xlim[1])
     width1=0.1*x
 
-    rects1 = ax.bar(0.8*x, y1, width1, color='teal',label="HET1",edgecolor='black')
-    rects2 = ax.bar(0.9*x, y2, width1, color='navy',label="HET6",edgecolor='black')
-    
-    rects3 = ax.bar(x, z1, width1, color='pink',label="GST1",edgecolor='black')
-    rects4 = ax.bar(1.1*x, z2, width1, color='purple',label="GST6",edgecolor='black')
+    rects1 = ax.bar(0.8*x, y1, width1, color='hotpink',label="HE MPI",edgecolor='black')
+    rects2 = ax.bar(0.9*x, y2, width1, color='purple',label="HE OMP",edgecolor='black')
+    rects3 = ax.bar(x, y3, width1, color='teal',label="GS MPI",edgecolor='black')
+    rects4 = ax.bar(1.1*x, y4, width1, color='navy',label="GS OMP",edgecolor='black')
 
     ax.set_xscale('log')
     ax.minorticks_on()
@@ -28,10 +60,15 @@ def plot4Data(x, y1, y2, z1, z2):
     ax.legend(loc='upper right')    
     ax.set_xlabel("# nodes")
     ax.set_ylabel("time (s)")
-    plt.show()
+
+    fname=fstem+".png"
+    plt.savefig(fname,format="png")
+    fname=fstem+".eps"
+    plt.savefig(fname,format="eps")      
+    plt.show()    
     
     
-def plot2Data(x, y1, y2):
+def plot2Data(x, y1, y2,fstem):
 
     fig, ax = plt.subplots()
     xlim=[15,500]
@@ -58,12 +95,10 @@ def plot2Data(x, y1, y2):
     ax.set_xlabel("# nodes")
     ax.set_ylabel("time (s)")
 
-#    fstem="strong-scale"
-    fstem="wc-scale"
     fname=fstem+".png"
-#    plt.savefig(fname,format="png")
+    plt.savefig(fname,format="png")
     fname=fstem+".eps"
-#    plt.savefig(fname,format="eps")    
+    plt.savefig(fname,format="eps")    
     plt.show()
 
 
@@ -92,11 +127,12 @@ T1GS=T1W*P1GS
 T6U=T6W*P6U
 T1U=T1W*P1U
 
+lnodes=[0,0,0,0,0]
+for i in range(0,5):
+    lnodes[i]=math.log(nodes[i],2)
+    print lnodes[i]
 
-#nodes=np.array(sdata[:,0])
-#mpidat=np.array(sdata[:,1])
-#ompdat=np.array(sdata[:,2])
-
-#plot2Data(nodes, T1W, T6W)
-plot2Data(nodes, T1U, T6U)
-plot4Data(nodes, T1HE, T6HE, T1GS, T6GS)
+plot2Data(nodes, T1W, T6W,"wc-scale")
+plot2Data(nodes, T1U, T6U,"U-scale")
+plot4Data3d(lnodes, T1HE, T6HE, T1GS, T6GS,"comms-scale-3d")
+plot4Data(nodes, T1HE, T6HE, T1GS, T6GS,"comms-scale")
