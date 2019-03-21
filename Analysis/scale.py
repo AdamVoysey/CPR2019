@@ -130,9 +130,15 @@ T1U=T1W*P1U
 lnodes=[0,0,0,0,0]
 for i in range(0,5):
     lnodes[i]=math.log(nodes[i],2)
-    print lnodes[i]
 
-plot2Data(nodes, T1W, T6W,"wc-scale")
-plot2Data(nodes, T1U, T6U,"U-scale")
-plot4Data3d(lnodes, T1HE, T6HE, T1GS, T6GS,"comms-scale-3d")
-plot4Data(nodes, T1HE, T6HE, T1GS, T6GS,"comms-scale")
+for i in range(1,5):
+    print str(nodes[i]/nodes[0]) + " " + str(T6W[0]/T6W[i] ) + " " + str(T1W[0]/T1W[i])
+
+print "----"
+for i in range(0,5):
+    print "$"+str(nodes[i])+ "$ & $" + str(T1W[i]) + "$ & $" + str(T1U[i]) + "$ & $" + str(T1HE[i]) + "$ & $" + str(T1GS[i]) + "$ & $$ & $$ & $"+ str(T6W[i]) + "$ & $" + str(T6U[i]) + "$ & $" + str(T6HE[i]) + "$ & $" + str(T6GS[i]) + "$ & $$ & $$ \\\\"
+
+#plot2Data(nodes, T1W, T6W,"wc-scale")
+#plot2Data(nodes, T1U, T6U,"U-scale")
+#plot4Data3d(lnodes, T1HE, T6HE, T1GS, T6GS,"comms-scale-3d")
+#plot4Data(nodes, T1HE, T6HE, T1GS, T6GS,"comms-scale")
