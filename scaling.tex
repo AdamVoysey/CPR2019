@@ -59,15 +59,43 @@ $384$ &$1059$  & $222$ & $310$ & $322$ & $24\times 32$ & $124$ \\\hline
 The model shows good scaling for both the MPI and hybrid programming
 models. The parallel efficiency is reasonable, the $216$ node job uses
 $9\times $ the resouces of the $24$ node job and both the MPI and
-hybrid version run more than $7\times $ faster . The hybrid code for the
+hybrid version run more than $7\times $ faster. The hybrid code for the
 $384$ node job which has $16\times $ the resource of the $24$ node
 job, runs approxmiately $11 \times$ faster.
 
 Compared to the scaling runs performed with the {\em Fallow Deer} (FD)
-release of LFRic and reported in~\cite{lfric} there is an apparent
+release of LFRic and reported in~\cite{LFRic} there is an apparent
 change in the OpenMP behaviour. The FD scaling shows the hybrid version of
 the code is faster than the MPI version, whereas the opposite is now
-true for the data displayed here. 
+true for the data displayed here. It is unclear why this might be
+so. The science problem and parallel code are broadly the same. The
+major change is to the solver algorithm which uses the new solver
+API. However, it is far from obvious why this would change the
+behaviour.
+
+The jobs have been profiled with CrayPAT and the data is shown in
+table~\ref{tab:scale-data}. CrayPAT groups the data according certain
+categories. User code (labelled ``U'') in the table and is the LFRic
+code, in this case kernels such as the various matrix-vector
+routines. The Halo Exchanges (labelled ``HE'') appear in the {\em ETC}
+category as YAXT is compiled as a library, in this case without the
+CrayPAT profiling, so it is unable to see that this ultimately calls
+MPI. The Global Sums (labelled ``GS'') appear under {\em MPI} as the
+global summation calls are in the LFRic infrastructure code.
+
+The strong scaling of the user code is shown in
+figure~\ref{fig:U_scale}\footnote{There is no hybrid data for 24 nodes
+  as the model didn't run to completion so no profile was generated.}.
+Both the MPI only and hybrid code show excellent scaling - the
+communication costs are represented in other categories. For MPI
+only, comparing the $24$ node to the $216$ node jobs, the User code
+runs nearly $9\times$ faster for $9$ times the resource. The hybrid
+version fares even better, showing super-linear scaling. Comparing the
+$54$ node job to the $384$ node job, the user code runs more than
+$12\times$ faster for $7.11\times$ the resource. This may well be due
+to caching effects, once the local volume becomes small enough to fit
+into cache.
+
 
 \begin{figure}
 \centering\includegraphics[width=1.0\linewidth]{figs/U-scale.eps}
