@@ -3,6 +3,9 @@
 In this subsection we will introduce the CMA\_appinv micro-benchmark and present performance results from tests on the Intel Broadwell and Cavium ARM-based ThunderX2 architectures.
 In addition we compare performance of the micro-benchmark when built with different compilers and runtime libraries.
 
+%Isambard is a XC50 system hosted by the Met Office and funded by the GW4 alliance and EPSRC.
+%The heterogeneous system contains chips of various architectures including 164 Cavium ThunderX2 nodes.
+
 \subsubsection{CMA micro-benchmark}
 
 The GungHo dynamical model performs operations to solve
@@ -33,29 +36,28 @@ It was confirmed by the original author of the code that the functionality of th
 The bug has minimal performance impact on CPU architectures- an intent(inout) array should be intent(out)- but may have a larger impact on GPU architectures where the array would be being offloaded unnecessarily. 
 
 The resultant micro-benchmark can be found in the micro-benchmark ~\cite{lfric-microbenchmarks} suite on github.
-We note that the LMA and CMA\_appinv micro-benchmarks serve different purposes in the solver code and as such direct comparisons are not appripriate.
-%Specifically, the LMA micro-benchmark applies the matrix $A$ to a vector $\mathbf{x}$ whereas the CMA\_inv micro-benchmark applies the inverse matrix $A^{-1}$ to $\mathbf{b}$, in other words it solves equation \ref{eq:matvec} for $\mathbf{x}$.
+We note that the LMA and CMA\_appinv micro-benchmarks serve different purposes in the solver code and as such direct comparisons are not appropriate.
 
 \subsubsection{CMA\_appinv performance}
 
 We present timings for the kernel on Intel Broadwell and Cavium ThunderX2 as measured using omp\_get\_wtime().
 In each case the kernel was run for 1000 iterations in order to obtain a smooth out runtime variability.
-% Timing the routine in this way may however slightly exaggerate the time spend performing thread synchronisation, a cost we estimate to be within the noise of the system.
 We use the latest stable version of each compiler available on the two platforms at the time of writing.
-Each executable was built with the -O3 optimisation flag .
+Each executable was built with the -O3 optimisation flag.
 
 \begin{figure}
 \centering\includegraphics[scale=0.5]{figs/Broadwell_microbenchmark_vanilla.eps}
-\caption{}
+\caption{Thread-scaling of runtime on a Broadwell node. A lower time is better.}
 \end{figure}
 
 \begin{figure}
 \centering\includegraphics[scale=0.5]{figs/ThunderX2_microbenchmark_vanilla.eps}
-\caption{}
+\caption{Thread-scaling of runtime on a ThunderX2 node. A lower time is better.}
 \end{figure}
 
-\paragraph{Intel Broadwell}
-On the Broadwell platform used (XCS) the compilers used were
+\paragraph{Intel Broadwell} is the architecture in use for production NWP systems on the Met Office XC40 system.
+Each node includes two 18-core 2.1 GHz processors.
+On the XCS platform the compilers used were
 \begin{itemize}
 \item CCE 8.7.7
 \item Intel 17.0.0.098
@@ -65,13 +67,12 @@ On the Broadwell platform used (XCS) the compilers used were
 During the development of this work we encountered notable differences in performance between compiler versions.
 For example, a measurable performance degradation between cce 8.6.0 and the cce 8.7.x series.
 The single threaded (OMP\_NUM\_THREADS=1) runtime increased from 7.4s to 10.5s when changing between the two versions.
-In other words cce 8.6.0 produces a faster executable than the Intel compiler but the 8.7.7 executable is slower than the Intel generated version.
+In other words cce 8.6.0 produces a faster single-threaded executable than the Intel compiler but the 8.7.7 executable is slower than the Intel generated version.
 This discrepancy is outwith the observed run-to-run variability on the system and is unexplained at present.
 We use the more recent (but slightly less performant) cce 8.7.7.
 
-\paragraph{TX2}
-Isambard is a XC50 system hosted by the Met Office and funded by the GW4 alliance and EPSRC.
-The heterogeneous system contains chips of various architectures including 164 Cavium ThunderX2 nodes.
+\paragraph{Cavium ThunderX2} processors, unlike some other ARM-based architectures, are targeted at the HPC market.
+Each Isambard node includes two 32-core 2.1GHz processors: i.e. 64 cores per node vs the 36 cores of the Intel Broadwell nodes on XCS.
 At the time of writing (after the March 2019 upgrade to CLE7.0) the supported compilers on the ARM-based nodes are
 \begin{itemize}
 \item CCE 8.7.9
@@ -80,6 +81,8 @@ At the time of writing (after the March 2019 upgrade to CLE7.0) the supported co
 \end{itemize}
 where the Allinea compiler is built on top of LLVM and Flang.
 
+% single threaded performance on TX2 is notably lower.
+% thread scaling wins out for TX2. There are enough columns of cells to keep all the threads busy.
 
 
 \subsubsection{CMA\_appinv performance using drop-in library call}
