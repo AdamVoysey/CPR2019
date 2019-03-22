@@ -103,9 +103,88 @@ into cache.
   User code from Baroclinic wave test.}
 \end{figure} 
 
+Shown in figure~\ref{fig:comms_scale} and Table~\ref{tab:scale-data}
+is the strong scaling of the communication components as measured by
+the CrayPAT tool. The halo exchanges for hybrid version of the code
+takes significantly longer than the MPI only version. The time
+difference accounts for the hybrid version being slower than MPI only.
+The count of the number of halo exchanges (performed internally by
+LFRic) is almost the same for the MPI and hybrid versions. The
+difference is a few hundred out of a total of $1.3$ million. The are
+not exactly the same because the global sum is not reproducible across
+different partitions, so the evolution is slightly different. However,
+after $100$ time-steps and many thousands of solver iterations, the
+conservative fields are still the same to many orders of magnitude.
+
 \begin{figure}
 \centering\includegraphics[width=1.0\linewidth]{figs/comms-scale.eps}
-\caption{\label{fig:comns_scale}Wall-clock time strong scaling of the 
-  communications costs of the Baroclinic wave test.}
+\caption{\label{fig:comms_scale}Wall-clock time strong scaling of the 
+  communications costs of the Baroclinic wave test. HE denotes Halo
+  Exchange and GS the Global Sum.}
 \end{figure} 
 
+The size of the halos is shown in Table~\ref{tab:scale-data}. The 
+halos for the hybrid version are bigger than the MPI only version, as 
+there are less MPI ranks, but there are less messages to send. As the 
+hybrid version is running with six threads, it has six times less the 
+number of messages. The hybrid version has fewer, but bigger MPI 
+messages and moreover, will have less total data to send. It is not 
+obvious why it should be so much slower. 
+
+The global sums don't show a clear trend in the case of MPI only and
+they appear to get faster with more nodes for the hybrid version. This
+is perhaps counter intuitive as the global sum is latency bound and
+should increase with the number of nodes. However, the aries network
+employs adaptive routing so that the path taken for communication
+depends on what other network traffic is occuring at the same
+time. This results in the best use of the total network, but for an
+individual application the communication cost may not be optimal and
+worse, not deterministic.
+
+To try and remove the effect of this variability, a Cray environment
+variable \verb+GNI_BLAS+ was set to $2$ and the $96$ node jobs re-run.
+Whist there was a difference between the run-times, the less adaptive
+version was not consistently faster, nor did it change the balance
+significantly. It should be noted that the communication cost
+node imbalance for the hybrid mode is significanly higher than for MPI
+only. The imbalance (defined as the variation across MPI ranks) is
+around $15\%$ of the halo exchange cost, which rises to $30\%$ of a
+much larger number for the hybrid version. For the global sum, again
+there is a much larger variation for the hybrid version even if the total time spent in
+global sums is reduced compared to MPI only. Changing the Cray
+environment variable settings does not materially change this view. 
+
+It is also not obvious why the hybrid version should now be slower
+than MPI when the opposite was true in the fallow deer. In this data
+the time-step is longer at $180$s and moreover, the fallow deer data
+was not profiled using CrayPAT, but the time for $50$ time-steps
+calculated from the logs. Shown in table~\ref{fig:fd_comp} is a
+comparison of trunk at r17483 and the fallow deer release (labelled
+FD). Clearly the hybrid version is now much slower. The trunk versions
+uses the new solver API, so the solver is a different algorithm but it
+is not doing a significantly different number of halo exchanges. The
+YAXT library performing the halo exchanges and the generate PSy layer
+code is not any different, {\em i.e.} halo exchanges called outside OpenMP regions.
+
+\begin{table}
+\centering
+\caption{\label{fig:fd_comp}Comparison of $50$ time-steps for the model on $96$ nodes
+  with a $75$s time-step.}
+\begin{tabular}{ccc}
+Run & time(s) & HE count \\\hline
+FD MPI & $714$ & $--$ \\
+FD OMP & $606$ & $697381$ \\
+Trunk OMP & $999$ & $755657$  
+\end{tabular}
+\end{table}
+
+In summary the LFRic model shows very good scaling behaviour for both
+MPI only and hybrid versions. The halo exchanges for the hybrid
+version are now performing worse than MPI only, and worse than in the
+fallow deer release. The reasons for this are unclear and whilst the
+variabiity of the communcation cost due to the adaptability of the
+Aries network has some role to play, it is not obvious that this is
+the reason for the degradation of communication performance. Reducing
+the communication costs are a target for improving the scalability of
+the model. In the next sections, approaches to reducing the global
+and local communication costs are described.
