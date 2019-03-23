@@ -4,7 +4,7 @@ singular pole which ultimately inhibits the scaling of the
 UM. Examining the scaling behaviour of the model to see if it
 performs sufficiently well is therefore important. To test the scaling a series
 of model runs was performed. The version of the LFRic repository trunk
-was $17483$. The code were compiled on the XCS with the Intel 17
+was $17483$. The code was compiled on the XCS with the Intel 17
 compiler, at production level which is \verb+-O3+. The baroclinic wave
 test was run on a $C576$ mesh. This roughly corresponds to a $17$km
 horizontal resolution. The model was run with a $30$km lid and with
@@ -52,7 +52,10 @@ $24$ &$11566$ & $--$    & $--$  & $--$ & $96\times 144$ & $484$ \\
 $54$ & $5410$  & $2732$ & $1282$ & $887$ & $64\times 96$ & $324$ \\
 $96$ &$3140$  & $1332$ & $895$ & $562$ & $48\times 72$ & $244$ \\
 $216$ &$1585$  & $468$ & $485$ & $384$ & $32\times 48$ & $164$ \\
-$384$ &$1059$  & $222$ & $310$ & $322$ & $24\times 32$ & $124$ \\\hline
+$384$ &$1059$  & $222$ & $310$ & $322$ & $24\times 32$ & $124$
+  \\\hline
+  & \multicolumn{4}{c|}{MPI 4, OMP 9} & \\ 
+$96$ & $4183$ & $1338$ & $1296$ & $1104$ & $72\times 72$ & $292$ \\ \hline
 \end{tabular}
 \end{table}
 
@@ -97,7 +100,7 @@ to caching effects, once the local volume becomes small enough to fit
 into cache.
 
 
-\begin{figure}
+\begin{figure}[ht!]
 \centering\includegraphics[width=1.0\linewidth]{figs/U-scale.eps}
 \caption{\label{fig:U_scale}Wall-clock time strong scaling of the 
   User code from Baroclinic wave test.}
@@ -116,7 +119,7 @@ different partitions, so the evolution is slightly different. However,
 after $100$ time-steps and many thousands of solver iterations, the
 conservative fields are still the same to many orders of magnitude.
 
-\begin{figure}
+\begin{figure}[ht!]
 \centering\includegraphics[width=1.0\linewidth]{figs/comms-scale.eps}
 \caption{\label{fig:comms_scale}Wall-clock time strong scaling of the 
   communications costs of the Baroclinic wave test. HE denotes Halo
@@ -154,19 +157,40 @@ there is a much larger variation for the hybrid version even if the total time s
 global sums is reduced compared to MPI only. Changing the Cray
 environment variable settings does not materially change this view. 
 
+Also shown in Table~\ref{tab:scale-data} is the CrayPAT profile data
+for a $96$ node job run with $4$ MPI ranks per node and $9$ OpenMP
+threads per MPI rank. This has a square domain decomposition like the
+MPI only versions. This runs considerably slower than both the $6$
+thread and MPI only version. The OpenMP synchronisation cost barely
+shows in the profile at $1\%$ of run-time. The user code portion runs
+in roughly the same time as the $6$ thread version, which is faster
+than MPI only. However, the communication costs are much higher. Both
+Halo Exchange and Global Sum take much longer and have a high degree
+of imbalance, at around $30\%$ each. The number of Halo Exchanges is
+around 1.3 million, the same as MPI and $6$ thread versions.  It is
+reasonable to believe that at least some of this increase in cost is
+due to network variablility. This could be examined by running in
+large exclusive reservations or with a statistical analysis of a large
+number of runs. Both these are expensive in terms of resource use and
+probably unjustifiable given pressure on resources for science rather
+than performance evaluation.
+
 It is also not obvious why the hybrid version should now be slower
-than MPI when the opposite was true in the fallow deer. In this data
-the time-step is longer at $180$s and moreover, the fallow deer data
-was not profiled using CrayPAT, but the time for $50$ time-steps
-calculated from the logs. Shown in table~\ref{fig:fd_comp} is a
-comparison of trunk at r17483 and the fallow deer release (labelled
-FD). Clearly the hybrid version is now much slower. The trunk versions
-uses the new solver API, so the solver is a different algorithm but it
-is not doing a significantly different number of halo
-exchanges. Neither the YAXT library performing the halo exchanges nor
-the generated PSy layer code are any different, {\em i.e.} halo
-exchanges called outside OpenMP regions, which call halo exchange on
-fields, which call YAXT.
+than MPI when the opposite was true in the FD release. In this data
+the time-step is longer at $180$s and moreover, the FD data was not
+profiled using CrayPAT, but the time for $50$ time-steps calculated
+from the logs. Shown in table~\ref{fig:fd_comp} is a comparison of
+trunk at r17483 and the FD release. Clearly the hybrid version is now
+much slower. The trunk versions uses the new solver API, so the solver
+is a different algorithm but it is not doing a significantly different
+number of halo exchanges. Neither the YAXT library performing the halo
+exchanges nor the generated PSy layer code are any different, {\em
+  i.e.} halo exchanges called outside OpenMP regions, which call halo
+exchange on fields, which call YAXT. The FD model was not profiled
+with CrayPAT so a detailed analysis cannot be performed. However,
+given the large cost of halo exchange for the hybrid version of trunk
+it is not unreasonable to surmise that this is the difference between
+FD and trunk.
 
 \begin{table}
 \centering
