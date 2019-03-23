@@ -1,1 +1,35 @@
-\subsection{\label{sec:multigrid}Multigrid}.
+\subsection{\label{sec:multigrid}Multigrid}
+The multigrid solver algorithm implementation in LFRic has taken a
+long time to develop for several reasons. Firstly, the new solver API,
+which enables easy configuration of different solver algorithms and
+pre-conditioners\footnote{Even nested solvers as currently deployed.},
+uses advanced Fortran OO abstract types. This has caused most
+compilers to have problems and significantly delayed the
+implementation. Secondly, implementing multigrid itself required
+several infrastructure changes. Multiple meshes, maps between these
+meshes and support for intergrid kernels in the PSyKAl API and in
+PSyclone. These have all been successfully implemented. Thirdly, when
+the multigrid algorithm itself was implemented the solver had problems
+converging.
+This was ultimately resolved as an issue with the vertical
+pre-conditioner and not multigrid itself. 
+
+\begin{table}
+\centering
+\caption{\label{tab:MG_data}Wall-clock time of execution of the whole code (WC), User
+  code (U), Halo Exchange (HE) and Global Sum (GS) in seconds. }
+\begin{tabular}{r|rrrr}
+version     & WC     & U      & HE     & GS \\\hline
+T17483      & $5398$ & $1851$ & $1333$ & $1657$ \\
+MG-B Krylov & $3387$ & $1087$ & $847$  & $1080$ \\
+MG-B MG     & $1337$ & $504$  & $388$  & $199$ \\\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht!]
+\centering\includegraphics[width=1.0\linewidth]{figs/mg-improvement.eps}
+\caption{\label{fig:mg}Wall-clock time for model components of
+  Baroclinic Wave test. ``T'' denotes trunk at 17483, ``Kr'' denotes
+  multigrid branch with Krylov subspace solver and ``Mg'' denotes
+  multigrid branch with multigrid solver.}
+\end{figure} 
