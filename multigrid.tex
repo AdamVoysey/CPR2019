@@ -14,6 +14,22 @@ converging.
 This was ultimately resolved as an issue with the vertical
 pre-conditioner and not multigrid itself. 
 
+The multigrid algorithm implemented here is a four-level V-cycle of
+the horizontal mesh, and used to pre-condition the Helmholtz or
+pressure solver. In fact, the pre-conditioned pressure field is taken
+as the ``solved'' outcome and no Krylov, iterative solver is applied
+to the pressure solver. The outer solver of the mixed system uses the
+GCR algorithm. The algorithmic details are not discussed here, but a
+Krylov sub-space solver performs several global sums per iteration. As
+multiple solves are required, each of many iterations there is a
+reduction of several thousand global sums per time-step.
+
+Neither the change to the vertical pre-conditioner, nor the multigrid
+solver are on the trunk. There is nothing to suggest that they require
+significant alteration, but the process of getting them on trunk has
+yet to be completed. Therefore results presented here for the
+Multigrid performance should be regarded as preliminary.
+
 \begin{table}
 \centering
 \caption{\label{tab:MG_data}Wall-clock time of execution of the whole code (WC), User
