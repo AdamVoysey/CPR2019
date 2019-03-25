@@ -17,7 +17,7 @@ pre-conditioner and not multigrid itself.
 The multigrid algorithm implemented here is a four-level V-cycle of
 the horizontal mesh, and used to pre-condition the Helmholtz or
 pressure solver. In fact, the pre-conditioned pressure field is taken
-as the ``solved'' outcome and no iterative, Krylov solver is applied
+as the ``solved'' outcome and no Krylov solver is applied
 to the pressure system. The outer solver of the mixed system uses the
 GCR algorithm. The algorithmic details are not discussed here, but a
 Krylov sub-space solver performs several global sums per iteration. As
