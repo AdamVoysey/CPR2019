@@ -1,7 +1,21 @@
 \documentclass[11pt]{article}
 \usepackage{graphicx}
 \usepackage{cite}
-\author{S.~V.~Adams, S.~Cusworth, C.~M.~Maynard and others}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\def\UrlBreaks{\do\/\do-}
+\lstset{language=Fortran, 
+  basicstyle=\small\ttfamily, 
+  %identifierstyle=\color{green}, 
+  numbers=left,
+  commentstyle=\color{red}, 
+  keywordstyle=\color{blue}, 
+  showstringspaces=false 
+}
+
+
+\author{S.~V.~Adams, S.~Cusworth, C.~M.~Maynard, S.~Mullerworth and others}
 \title{Report on LFRic computational performance 2019}
 \date{\today}
 
@@ -81,12 +95,15 @@ The report is organised into sections on each of these four strands,
 {\em viz.} I/O, local communication, global communication and
 architecture specific optimisations.
 
+\include{scaling}
 
-\include{perf_section}
+\include{multigrid}
+
+\include{annexed_dofs}
 
 \include{io_section}
 
-\include{compiler_subsection}
+\include{PA}
 
 \bibliography{refs.bib}
 \bibliographystyle{unsrt}
