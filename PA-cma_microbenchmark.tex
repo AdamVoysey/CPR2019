@@ -1,7 +1,7 @@
 \subsection{CMA microbenchmark on Broadwell and TX2}
 \label{sec:pa-microbenchmark}
-In this subsection we will introduce the CMA\_appinv microbenchmark and present performance results from tests on the Intel Broadwell and Cavium ARM-based ThunderX2 architectures.
-In addition we compare performance of the microbenchmark when built with different compilers and runtime libraries.
+In this subsection the CMA\_appinv microbenchmark is introduced and performance results from tests on the Intel Broadwell and Cavium ARM-based ThunderX2 architectures are presented.
+In addition the performance of the microbenchmark when built with different compilers and runtime libraries is compared.
 
 \subsubsection{CMA microbenchmark}
 
@@ -15,17 +15,16 @@ The LMA microbenchmark discussed in Section \ref{sec:pa} is a characteristic exa
 The LFRic infrastructure also contains methods for solving equation \ref{eq:matvec} on a column-by-column basis.
 Although these Column Matrix Assembly (CMA) methods have yet to be utilised by the full GungHo application they are deployed in the gravity\_wave mini-app.
 
-For this report we generated a new CMA microbenchmark using LFRic revision 15378 focused on the columnwise\_op\_appinv\_kernel\_code() routine in the gravity\_wave mini-app\footnote{At the time of writing the target kernel has not been significantly modified since extraction.}.
+For this report a new CMA microbenchmark was generated using LFRic revision 15378 focused on the columnwise\_op\_appinv\_kernel\_code() routine in the gravity\_wave mini-app\footnote{At the time of writing the target kernel has not been significantly modified since extraction.}.
 This kernel is used in the pre-conditioner for the Helmholtz solver to solve the tridiagonal case of equation \ref{eq:matvec} using the Thomas Algorithm~\cite{numericalrecipes}.
 As per the LMA microbenchmark, the driver code was extracted from the Psyclone-generated Psy-layer and the kernel was taken directly from the LFRic source code.
 By design, the driver routine contains the so called global optimisations, namely OpenMP worksharing and colouring (to prevent data race conditions) over columns on the sphere.
 
-The dinodump capability from PYSKE was used to generate Known Good Output (KGO) which we use to verify the microbenchmark behaved as expected in later tests.
+The dinodump capability from PYSKE was used to generate Known Good Output (KGO) which was use to verify the microbenchmark behaved as expected in later tests.
 This involved adding additional PSYKE subroutine calls to the Psy-layer code in the gravity\_wave mini-app in order to capture the input scalars and arrays for the kernel.
 The microbenchmark driver code was also trivially modified to read in the produced dinodump before calling the kernel and compare the result of the kernel against the KGO.
 Before running the mini-app to generate the dinodumo the number of vertical layers in the configuration was modified from the default (10) to 256.
-While current NWP and climate GA and RA production configurations use between 70 and 90 vertical (UM) levels we took 256 layers in order to increase the throughput of the benchmark and also in expectation that future configurations will run with increased vertical resolution.
-
+While current NWP and climate GA and RA production configurations use between 70 and 90 vertical (UM) levels the microbenchmark was set to run over 256 layers in order to increase throughput and also in expectation that future configurations will run with increased vertical resolution.
 
 While generating the new microbenchmark a minor bug in the kernel was discovered.
 Specifically, the manner in which the kernel is called in gravity\_wave mini-app (and the supporting code comments) indicate that the kernel is called to update the target array but instead the kernel actually populates the array while overriding the initial contents.
@@ -33,13 +32,13 @@ It was confirmed by the original author of the code that the functionality of th
 The bug has minimal performance impact on CPU architectures- an intent(inout) array should be intent(out)- but may have a larger impact on GPU architectures where the array would be being offloaded unnecessarily. 
 
 The resultant microbenchmark can be found in the microbenchmark ~\cite{lfric-microbenchmarks} suite on GitHub.
-We note that the LMA and CMA\_appinv microbenchmarks serve different purposes in the solver code and as such direct comparisons are not appropriate.
+Note that the LMA and CMA\_appinv microbenchmarks serve different purposes in the solver code and as such direct comparisons are not appropriate.
 
 \subsubsection{CMA\_appinv performance}
 
-We present timings for the kernel on Intel Broadwell and Cavium ThunderX2 as measured using \verb+omp_get_wtime()+.
+Run times for the kernel on Intel Broadwell and Cavium ThunderX2 were measured using calls to \verb+omp_get_wtime()+.
 In each case the kernel was run for 1000 iterations in order to obtain a smooth out runtime variability.
-We use the latest stable version of each compiler available on the two platforms at the time of writing.
+The latest stable version of each compiler on the two platforms were used.
 Each executable was built with the \verb+-O3+ optimisation flag.
 
 \begin{figure}
@@ -60,12 +59,11 @@ On the XCS platform the compilers used were
 
 The runtimes of the CMA\_appinv microbenchmark when built with each of the three compilers on the Broadwell nodes are shown in figure \ref{fig:cma_broadwell}.
 
-During the development of this work we encountered notable differences in performance between compiler versions.
+During the development of this work notable differences in performance between compiler versions became apparent.
 For example, a measurable performance degradation between CCE 8.6.0 and the CCE 8.7.x series.
 The single threaded (\$OMP\_NUM\_THREADS=1) runtime increased from 7.4s to 10.5s when changing between the two versions.
 In other words CCE 8.6.0 produces a faster single-threaded executable than the Intel compiler but the 8.7.7 executable is slower than the Intel generated version.
 This discrepancy is outwith the observed run-to-run variability on the system and is unexplained at present.
-We use the most recent version available, i.e. CCE 8.7.7.
 
 While the Intel compiled version outperforms CCE and GNU on a single thread, CCE gave the lowest runtime on a full node.
 This could be a reflection of the better scalability of the Cray OpenMP runtime library c.f. Intel.
@@ -93,7 +91,7 @@ In fact, in a node-for-node comparison the ThunderX2 out-performs Broadwell by a
 \label{fig:cma_tx2}
 \end{figure}
 
-\begin{table}[t]
+\begin{table}[bh]
   \scriptsize
   \begin{center}
     \caption{Full node performance of the CMA\_appinv microbenchmark for the available compilers on the tested architectures.
@@ -115,9 +113,9 @@ In fact, in a node-for-node comparison the ThunderX2 out-performs Broadwell by a
 
 
 \subsubsection{CMA\_appinv performance using drop-in library call}
-Next we investigate whether the implementation of the Thomas algorithm as written in the kernel can be replaced with a call to a standard library- in this case LAPACK.
+Next it is investigated whether the implementation of the Thomas algorithm as written in the kernel can be replaced with a call to a standard library- in this case LAPACK.
 The potential benefits of this include a potential improvement to runtimes of current architectures.
-But, more importantly calling a standard API allows us to tap into routines that have been optimised specifically for the architecture.
+But, more importantly calling a standard API allows LFRic to tap into routines that have been optimised specifically for the architecture.
 This could provide performance portability while reducing porting and maintenance costs when moving between future compute platforms.
 A potential problem with this plan is that the memory layout used in the columnwise operator type objects differs from that expected by the tridiagonal solver in the LAPACK API.
 
@@ -125,15 +123,15 @@ A version of the microbenchmark using a call to the LAPACK \verb+dgtsv+ subrouti
 Further investigation showed that runtime performance (single threaded and full node) was poor compared to the baseline microbenchmark.
 While the thread-scaling of the original application was maintained, the runtime increased by approximately 50-80 per cent (depending on the compiler used).
 A significant fraction of this slow-down was due to the aforementioned memory copies from the ``LFRic-shaped'' arrays into the ``LAPACK-shaped'' arrays and back.
-To demonstrate this we took the new microbenchmark and removed the costly memory copies.
-While this obviously produces scientifically nonsensical results, we use this version to quantify the costs of the memory copies.
+To demonstrate this the new version of microbenchmark was produced in which the costly memory copies had been removed.
+While this obviously produces scientifically nonsensical results, this version can be used to quantify the costs of the memory copies.
 
 The runtimes for the three variants of microbenchmark (the baseline version, the LAPACK version and the LAPACK version without any memory copies) are shown in figure \ref{tab:lapack_table}.
-From this we can infer that the increase in runtime is not solely due to the memory copies.
-Instead we can see that even once the memory transfer costs have been negated the LAPACK version of the kernel does not perform as well as the trunk version on either Broadwell or ThunderX2.
+From this one can infer that the increase in runtime is not solely due to the memory copies.
+Instead, even when the memory transfer costs have been negated the LAPACK version of the kernel does not perform as well as the trunk version on either Broadwell or ThunderX2.
 Investigations confirmed that this result held regardless of whether the Cray-libsci package or the Intel MKL package was linked against.
-We believe that the lack of performance of the LAPACK version is in part due to the fact that these implementations have been optimised for larger matrix problems (than 256x256).
-At this time we conclude that replacing the implementation of the Thomas algorithm with the LAPACK version would not beneficial to LFRic performance on Broadwell or ThunderX2 architectures.
+It is believed that the lack of performance of the LAPACK version is in part due to the fact that these implementations have been optimised for larger matrix problems (than 256x256).
+At this time replacing the implementation of the Thomas algorithm with the LAPACK version would not beneficial to LFRic performance on Broadwell or ThunderX2 architectures.
 
 \begin{table}[t]
   \scriptsize
