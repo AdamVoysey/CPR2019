@@ -23,7 +23,7 @@ GCR algorithm. The algorithmic details are not discussed here, but a
 Krylov sub-space solver performs several global sums per iteration. As
 multiple solves per outer iteration are required, each itself of many
 iterations there is a reduction of several thousand global sums per
-time-step employing multigrid in ths manner.
+time-step employing multigrid in this manner.
 
 Neither the change to the vertical pre-conditioner, nor the multigrid
 solver are on the trunk. There is nothing to suggest that they require
@@ -60,7 +60,7 @@ are the profiling data from CrayPAT for three different model versions
 of the Baroclinic wave test on a $C1152$ mesh with a $120$s time-step
 for $100$ time-steps. This corresponds to a roughly 9km
 resolution. The models were run on $384$ nodes with $6$ MPI ranks per
-node and $6$ Open MP threads per MPI rank.  The CSAR branch is
+node and $6$ OpenMP threads per MPI rank.  The CSAR branch is
 \verb+r17264_CSAR19_gungho@17480+.
 
 Comparing the Krylov solver in the CSAR branch with the modification
@@ -76,7 +76,7 @@ $3.5 \times $. The reduction in the cost of the global sums is very
 dramatic, more than $8 \times$. 
 
 The global sum is latency bound and so the cost increases with the
-number of MPI ranks taking part. Doing far less global sums will
+number of MPI ranks taking part. Doing far fewer global sums will
 reduce this cost and moreover, reducing the number of global sums will
 have a larger effect as the cost of each sum increases with increasing
 number of MPI ranks. This reduction in the cost should
