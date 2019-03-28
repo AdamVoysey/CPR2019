@@ -23,7 +23,7 @@ By design, the driver routine contains the so called global optimisations, namel
 The dinodump capability from PYSKE was used to generate Known Good Output (KGO) which was use to verify the microbenchmark behaved as expected in later tests.
 This involved adding additional PSYKE subroutine calls to the Psy-layer code in the gravity\_wave mini-app in order to capture the input scalars and arrays for the kernel.
 The microbenchmark driver code was also trivially modified to read in the produced dinodump before calling the kernel and compare the result of the kernel against the KGO.
-Before running the mini-app to generate the dinodumo the number of vertical layers in the configuration was modified from the default (10) to 256.
+Before running the mini-app to generate the dinodump the number of vertical layers in the configuration was modified from the default (10) to 256.
 While current NWP and climate GA and RA production configurations use between 70 and 90 vertical (UM) levels the microbenchmark was set to run over 256 layers in order to increase throughput and also in expectation that future configurations will run with increased vertical resolution.
 
 While generating the new microbenchmark a minor bug in the kernel was discovered.
