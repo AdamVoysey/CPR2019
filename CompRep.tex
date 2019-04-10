@@ -11,11 +11,11 @@
   numbers=left,
   commentstyle=\color{red}, 
   keywordstyle=\color{blue}, 
-  showstringspaces=false 
+  showstringspaces=false
 }
 
 
-\author{S.~V.~Adams, S.~Cusworth, C.~M.~Maynard, S.~Mullerworth and others}
+\author{S.~V.~Adams, S.~J.~Cusworth, C.~M.~Maynard, S.~Mullerworth}
 \title{Report on LFRic computational performance 2019}
 \date{\today}
 
@@ -31,7 +31,7 @@ to accommodate different programming models to target different
 processor architectures. Currently, OpenMP 2.0 is supported for shared
 memory parallelism on CPUs. This is being extended to support OpenACC
 to target both shared memory parallelism and Instruction Level
-Parallelism (IPL) on GPUs. Moreover, the infrastructure has been
+Parallelism (ILP) on GPUs. Moreover, the infrastructure has been
 extended to support parallel, asynchronous I/O using the XIOS
 client/server framework.
 Other developments include the abstract solver API which allows for great
@@ -66,34 +66,36 @@ of concerns between different areas of the code, promoting code re-use
 and code development by disentangling dependencies. However, the lack
 of compiler support, or more precisely, the proliferation of compiler
 bugs which prevent the use of particular compilers, either without specific
-code work arounds or even at all, is major problem. Development has
+code work arounds or even at all is major problem. Development has
 been severely delayed whilst compiler bugs have been isolated and
-reported and work-arounds sought. The lack of working Fortran 2003
-compilers remains a source of concern and must be considered a risk to
-the project.
+reported and work-arounds sought. 
+
+The baroclinic wave test is used to measure the performance of the
+model. The solver dominates the run-time. The main computation
+costs for this calculation are the local
+communication in the form of Halo Exchanges, global communication in
+the form of global sums and the user code in the form of kernels for
+the various matrix-vector operations. Any science computation will
+require the output of various fields, thus I/O also forms a
+significant cost. 
 
 The strategy to obtain compute performance for LFRic has four main
-strands. I/O performance is achieved by using the XIOS capability for
-asynchronous parallel I/O in order to hide the cost of writing data.
-Compute performance is achieved by enabling scalability, allowing
-many agents to do computation. This comes at the cost of communication.
-Local communication in the form of halo
-exchange is reduced by employing a communication avoiding/reducing
-algorithm of redundant computation into the halos and exploiting shared
-memory threaded parallelism. Global communications are primarily in
-the form of global sums required for iterative solvers. The global sum
-is already vendor optimised both in the vendor supplied MPI library
-implementation and the high-bandwidth, low-latency network of the
-machine itself. The only way to reduce this cost and ultimate limit on
-scalability is to use an algorithm with fewer global sums. This is the
-Geometric multigrid pre-conditioner to the Helmholtz solver. The {\em
-  on-node} compute performance of the LFRic code itself is examined by
-considering the performance of computationally intensive kernels on
-different processor architectures. The LFRic Microbenchmark suite can
-be used to develop architecture specific optimisations.
-The report is organised into sections on each of these four strands,
-{\em viz.} I/O, local communication, global communication and
-architecture specific optimisations.
+strands, to address each of the costs. I/O performance is achieved by
+using the XIOS capability for asynchronous parallel I/O in order to
+hide the cost of writing data.  Compute performance is achieved by
+enabling scalability, allowing many agents to do computation. This
+comes at the cost of communication.  Local communication is reduced by
+employing a communication avoiding/reducing algorithm of redundant
+computation into the halos and exploiting shared memory threaded
+parallelism. The Geometric multigrid pre-conditioner to the Helmholtz
+solver avoids many global sums by reducing the need for an iterative
+solver. The {\em on-node} compute performance of the LFRic code itself
+is examined by considering the performance of computationally
+intensive kernels on different processor architectures. The LFRic
+Microbenchmark suite can be used to develop architecture specific
+optimisations.  The report is organised into sections on each of these
+four strands, {\em viz.} I/O, local communication, global
+communication and architecture specific optimisations.
 
 \include{scaling}
 
@@ -104,6 +106,37 @@ architecture specific optimisations.
 \include{io_section}
 
 \include{PA}
+\include{PA-cma_microbenchmark}
+
+\section{Conclusions}
+I/O
+performance of XIOS has been examined and whilst results are promising,
+network variability makes definitive statements difficult. Several
+avenues of further work have been suggested.
+
+The cost of Halo Exchange for the OpenMP version seems to have
+increased dramatically since the Fallow Deer release. Network
+variability may play a role 
+in this change in behaviour. Much
+more investigation to find the cause of this issue. However, the
+annexed dof transformation does reduce the number of halo exchanges
+which reduces this cost. 
+
+The Multigrid pre-conditioner shows a large reduction in the total
+amount of work, but the reduction in cost of the global sums will
+boost the scaling performance as well as reducing the total cost.
+
+The micro-benchmarks suite has been used to explore the performance of
+individual kernels on different processor architectures. The
+performance of external
+libraries and code optimisations have been explored and these can act
+as guide for the type of automatic optimisations that will need to be
+developed in PSyclone. 
+
+For all these performance issues, further work and analysis is
+required. 
+
+
 
 \bibliography{refs.bib}
 \bibliographystyle{unsrt}

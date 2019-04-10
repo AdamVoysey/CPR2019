@@ -38,7 +38,7 @@ This is a summary of potential optimisations from NVIDIA.
       lhs(map1(df)+k) = lhs(map1(df)+k) + lhs_e(df,k)
     end do
 
-  end do  
+  end do  !$
 \end{lstlisting}
 
 Shown in listing~\ref{lst:LMA-orig} is a code fragment of the LMA
@@ -164,9 +164,26 @@ its is being developed so that it can parse individual statements in
 the kernel. This is necessary so that the kernel source can be
 annotated with directives. Then the whole code can have a GPU
 implementation generated automatically. To modify the actual source
-code takes this a step further. However, it would in principle be
-possible and moreover, this is similar to some of the ideas in CLAW~\cite{claw}.
-CLAW is being considered for the parallelisation of the physical
-parameterisations and some of the ideas would then be re-implemented in
-PSyclone. Generating optimised code for GPUs is then possible.
+code would be a further step. 
+
+PSyclone uses metadata in the kernel header describing how the data is
+to be accessed. In particular, data access descripters tell PSyclone
+which fields are read, written or incremented {\em etc.} This allows
+PSyclone to generate the correct code for halo exchanges, horizontal
+looping and whether colouring is necessary for threading. For simple
+kernels such as the LMA matrix-vector it may well be possible for
+parts of the source code to be correctly identified for
+transformation. However, extra metadata might be required for more
+complex kernels. Another approach would be to try similar ideas as
+used in CLAW~\cite{claw}. CLAW is being considered for the parallelisation of the physical
+parameterisations, written as a single column model with the
+horizontal loop abstracted away. This enables the loop order to be
+generated differently for different architectures {\em e.g.} CPU or
+GPU.
+
+This work demonstrates kernels can be ported to GPUs with good levels
+of performance. Incorporating these ideas into PSyclone is certainly
+possible. The simplest changes will allow a GPU port to be made
+automatically. To gain the benefits of optimisation more complex
+enhancements to PSyclone will be required.  
 

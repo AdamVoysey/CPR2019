@@ -24,7 +24,7 @@ For the purposes of the tests here: 900s for a C96 mesh and 180s for a C576 mesh
 10 fields are currently output as diagnostics in this configuration (air\_density (rho), three components of vorticity (xi1, xi2, xi3), eastward\_wind (u1), 
 northward\_wind (u2), exner pressure (exner), divergence
 of wind (divergence) on 30 half levels; air\_potential\_temperature (theta), upward\_air\_velocity (u3) on 31 full levels
-which results in approximately 5 Gb data per output
+which results in approximately 5 GB data per output
 
 To keep within the PBS queue time limit the basic run is for 120 timesteps, with diagnostic\_frequency set to 20 timesteps.
 This makes for 6 writes to a single UGRID-NetCDF file over the course of the run.
@@ -196,7 +196,7 @@ In addition to regular diagnostics, the rho, exner and divergence fields are reg
     \caption{Regrid, computing weights: Memory Usage}
     \label{tab:table6}
      \begin{tabular}{|c|c|c|c|}
-      \textbf{Nodes} & \textbf{Memory Usage Gb (pp) } & \textbf{Memory Usage Gb (diag only)} & \textbf{Memory Usage Gb (no IO)} \\
+      \textbf{Nodes} & \textbf{Memory Usage GB (pp) } & \textbf{Memory Usage GB (diag only)} & \textbf{Memory Usage GB (no IO)} \\
       \hline
       24 & 83.0 & 81.8 & 77.4 \\
       54 & 150.6 & 149.2 & 138.8 \\
@@ -254,6 +254,8 @@ We suggest several avenues of investigation:
 \end{itemize}
 
 
-We suspect the issues are to do with memory usage and to fully investigate this LFRic needs a way of regularly monitoring per-timestep memory usage as a matter of urgency.
+It is suspected that the issues are to do with memory usage and to
+fully investigate this LFRic needs a way of regularly monitoring
+per time-step memory usage as a matter of urgency.
  
 

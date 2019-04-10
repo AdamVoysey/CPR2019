@@ -1,19 +1,4 @@
 \subsection{\label{sec:multigrid}Multigrid}
-The implementation of the multigrid solver algorithm in LFRic has taken a
-long time to develop for several reasons. Firstly, the new solver API,
-which enables easy configuration of different solver algorithms and
-pre-conditioners\footnote{Even nested solvers as currently deployed.},
-uses advanced Fortran OO abstract types. This has caused most
-compilers to have problems and significantly delayed the
-implementation. Secondly, implementing multigrid itself required
-several infrastructure changes. Multiple meshes, maps between these
-meshes and support for intergrid kernels in the PSyKAl API and in
-PSyclone. These have all been successfully implemented. Thirdly, when
-the multigrid algorithm itself was implemented the solver had problems
-converging.
-This was ultimately resolved as an issue with the vertical
-pre-conditioner and not multigrid itself. 
-
 The multigrid algorithm implemented here is a four-level V-cycle of
 the horizontal mesh, and used to pre-condition the Helmholtz or
 pressure solver. In fact, the pre-conditioned pressure field is taken
@@ -55,13 +40,14 @@ MG-B MG     & $1337$ & $504$  & $388$  & $199$ \\\hline
   CSAR branch with the multigrid pre-conditioner as the solver.}
 \end{figure} 
 
-Displayed in Table~\ref{tab:MG_data} and shown in figure~\ref{fig:mg}
+Shown in figure~\ref{fig:mg}
 are the profiling data from CrayPAT for three different model versions
 of the Baroclinic wave test on a $C1152$ mesh with a $120$s time-step
 for $100$ time-steps. This corresponds to a roughly 9km
 resolution. The models were run on $384$ nodes with $6$ MPI ranks per
 node and $6$ OpenMP threads per MPI rank.  The CSAR branch is
-\verb+r17264_CSAR19_gungho@17480+.
+\verb+r17264_CSAR19_gungho@17480+. The data is also displayed in
+Table~\ref{tab:MG_data} for detailed analysis and reference.
 
 Comparing the Krylov solver in the CSAR branch with the modification
 to the vertical pre-conditioner shows how efficient the vertical
